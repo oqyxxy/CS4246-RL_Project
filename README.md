@@ -2,7 +2,7 @@
 
 ### Setup
 
-From root: do
+From root, do:
 
 `
 pip install -r -requirements.txt
