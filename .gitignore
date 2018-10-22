@@ -105,3 +105,8 @@ venv.bak/
 
 # pycharm
 .idea/
+
+# gym
+*.meta.json
+*.mp4
+*_log.json
