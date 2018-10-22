@@ -53,13 +53,13 @@ class AtariProcessor(Processor):
 
 args = easydict.EasyDict({  # use this instead of argparse
     "mode": "train",
-    "env_name": "MsPacmanDeterministic-v4",
+    "env_name": "MsPacman-v4",
     "weights": None,
 })
 
 # Get the environment and extract the number of actions.
 env = gym.make(args.env_name)
-env = wrappers.Monitor(env, './', force=True)  # save animations
+env = wrappers.Monitor(env, './', force=True, video_callable=False)  # save animations
 
 np.random.seed(123)
 env.seed(123)
