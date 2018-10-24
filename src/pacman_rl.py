@@ -99,7 +99,7 @@ if execution_mode == 'train':
     weights_filename = 'dqn_{}_weights.h5f'.format(ENV_NAME)
     checkpoint_weights_filename = 'dqn_' + ENV_NAME + '_weights_{step}.h5f'
     log_filename = 'dqn_{}_log.json'.format(ENV_NAME)
-    callbacks = [ModelIntervalCheckpoint(checkpoint_weights_filename, interval=2500000)]
+    callbacks = [ModelIntervalCheckpoint(checkpoint_weights_filename, interval=250000)]
     callbacks += [FileLogger(log_filename, interval=100)]
     dqn.fit(env, callbacks=callbacks, nb_steps=10000000, log_interval=1000000)
     dqn.save_weights(weights_filename, overwrite=True)
