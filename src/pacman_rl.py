@@ -16,15 +16,19 @@ from rl.core import Processor
 from rl.callbacks import FileLogger, ModelIntervalCheckpoint
 
 ENV_NAME = "MsPacmanDeterministic-v4"
-INPUT_SHAPE = (84, 84)
+INPUT_SHAPE = (80, 80)
 WINDOW_LENGTH = 4
 
 
 class AtariProcessor(Processor):
     def process_observation(self, observation):
+        # We perform standard atari pre-processing here to optimize training performance.
+        # Optimization includes cropping, resizing and gray-scaling.
+        # Use "img.show()" to view how the resulting image looks like.
         assert observation.ndim == 3  # (height, width, channel)
         img = Image.fromarray(observation)
-        img = img.resize(INPUT_SHAPE).convert('L')  # resize and convert to grayscale
+        img = img.crop((0, 0, 160, 172))  # Removes bottom interface menu (Lives, score, cherries)
+        img = img.resize(INPUT_SHAPE).convert('L')  # Resize + gray-scale
         processed_observation = np.array(img)
         assert processed_observation.shape == INPUT_SHAPE
         return processed_observation.astype('uint8')  # saves storage in experience memory
@@ -36,10 +40,37 @@ class AtariProcessor(Processor):
         processed_batch = batch.astype('float32') / 255.
         return processed_batch
 
-    def process_reward(self, reward):
-        return np.clip(reward, -1., 1.)
+    # def process_reward(self, reward):
+    #     if reward > 10:
+    #         print(reward)
+    #     elif reward < 0:
+    #         print(reward)
+    #     return np.clip(reward, -1., 1.)
 
 
+def build_nn_model():
+    input_shape = (WINDOW_LENGTH,) + INPUT_SHAPE
+    model = Sequential()
+    model.add(Permute((2, 3, 1), input_shape=input_shape))
+    model.add(Convolution2D(32, 8, strides=4))
+    # model.add(LeakyReLU(alpha=0.3))
+    model.add(Activation('relu'))
+    model.add(Convolution2D(64, 4, strides=2))
+    # model.add(LeakyReLU(alpha=0.3))
+    model.add(Activation('relu'))
+    model.add(Convolution2D(64, 3, strides=1))
+    # model.add(LeakyReLU(alpha=0.3))
+    model.add(Activation('relu'))
+    model.add(Flatten())
+    model.add(Dense(512))
+    # model.add(LeakyReLU(alpha=0.3))
+    model.add(Activation('relu'))
+    model.add(Dense(nb_actions))
+    model.add(Activation('linear'))
+    return model
+
+
+# Basic input validation
 if len(sys.argv) < 2:
     print("Invalid input format! Expected format:")
     print("python pacman_rl.py <train/run>")
@@ -51,32 +82,8 @@ env = gym.make(ENV_NAME)
 nb_actions = env.action_space.n
 
 
-# Next, we build our model. We use the same model that was described by Mnih et al. (2015).
-input_shape = (WINDOW_LENGTH,) + INPUT_SHAPE
-model = Sequential()
-if K.image_dim_ordering() == 'tf':
-    # (width, height, channels)
-    model.add(Permute((2, 3, 1), input_shape=input_shape))
-elif K.image_dim_ordering() == 'th':
-    # (channels, width, height)
-    model.add(Permute((1, 2, 3), input_shape=input_shape))
-else:
-    raise RuntimeError('Unknown image_dim_ordering.')
-model.add(Convolution2D(32, (8, 8), strides=(4, 4)))
-# model.add(LeakyReLU(alpha=0.3))
-model.add(Activation('relu'))
-model.add(Convolution2D(64, (4, 4), strides=(2, 2)))
-# model.add(LeakyReLU(alpha=0.3))
-model.add(Activation('relu'))
-model.add(Convolution2D(64, (3, 3), strides=(1, 1)))
-# model.add(LeakyReLU(alpha=0.3))
-model.add(Activation('relu'))
-model.add(Flatten())
-model.add(Dense(512))
-# model.add(LeakyReLU(alpha=0.3))
-model.add(Activation('relu'))
-model.add(Dense(nb_actions))
-model.add(Activation('linear'))
+# Build our model with reference to deepmind DQN paper (Minh et al.).
+model = build_nn_model()
 print(model.summary())
 
 # Finally, we configure and compile our agent. You can use every built-in Keras optimizer and
@@ -100,7 +107,7 @@ policy = LinearAnnealedPolicy(EpsGreedyQPolicy(), attr='eps', value_max=1., valu
 
 dqn = DQNAgent(model=model, nb_actions=nb_actions, policy=policy, memory=memory,
                processor=processor, nb_steps_warmup=50000, gamma=.99, target_model_update=10000,
-               train_interval=4, delta_clip=1.)
+               train_interval=4, delta_clip=1., enable_double_dqn=True, enable_dueling_network=True)
 dqn.compile(Adam(lr=.00025), metrics=['mae'])
 
 if execution_mode == 'train':
@@ -111,7 +118,7 @@ if execution_mode == 'train':
     log_filename = 'dqn_{}_log.json'.format(ENV_NAME)
     callbacks = [ModelIntervalCheckpoint(checkpoint_weights_filename, interval=2500000)]
     callbacks += [FileLogger(log_filename, interval=100)]
-    dqn.fit(env, callbacks=callbacks, nb_steps=40000000, log_interval=1000000)
+    dqn.fit(env, callbacks=callbacks, nb_steps=10000000, log_interval=1000000)
 
     # After training is done, we save the final weights one more time.
     dqn.save_weights(weights_filename, overwrite=True)
