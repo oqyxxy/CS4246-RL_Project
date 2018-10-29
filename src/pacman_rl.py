@@ -96,15 +96,15 @@ dqn = DQNAgent(model=model, nb_actions=nb_actions, policy=policy, memory=memory,
 dqn.compile(Adam(lr=.00025), metrics=['mae'])
 
 if execution_mode == 'train':
-    weights_filename = 'without_huberloss_dqn_{}_weights.h5f'.format(ENV_NAME)
+    weights_filename = 'dqn_{}_weights.h5f'.format(ENV_NAME)
     checkpoint_weights_filename = 'dqn_' + ENV_NAME + '_weights_{step}.h5f'
-    log_filename = 'without_huberloss_dqn_{}_log.json'.format(ENV_NAME)
+    log_filename = 'dqn_{}_log.json'.format(ENV_NAME)
     callbacks = [ModelIntervalCheckpoint(checkpoint_weights_filename, interval=250000)]
     callbacks += [FileLogger(log_filename, interval=100)]
     dqn.fit(env, callbacks=callbacks, nb_steps=10000000, log_interval=1000000)
     dqn.save_weights(weights_filename, overwrite=True)
     dqn.test(env, nb_episodes=10, visualize=False)
 elif execution_mode == 'run':
-    weights_filename = 'without_huberloss_dqn_{}_weights.h5f'.format(ENV_NAME)
+    weights_filename = 'dqn_{}_weights.h5f'.format(ENV_NAME)
     dqn.load_weights(weights_filename)
     dqn.test(env, nb_episodes=10, visualize=True)
