@@ -4,7 +4,7 @@ import warnings
 import keras.backend as K
 from keras.models import Model
 from keras.layers import Lambda, Input, Layer, Dense
-from rl.memory import PrioritizedMemory, PartitionedMemory
+from src.memory import PrioritizedMemory, PartitionedMemory
 from rl.layers import *
 from rl.core import Agent
 from rl.policy import EpsGreedyQPolicy, GreedyQPolicy

@@ -41,7 +41,7 @@ class SegmentTree(object):
         end -= 1
         return self.reduce_helper(start, end, 1, 0, self._size - 1)
 
-    def set_item(self, idx, val):
+    def __setitem__(self, idx, val):
         # index of the leaf
         idx += self._size
         self._value[idx] = val
@@ -53,7 +53,7 @@ class SegmentTree(object):
             )
             idx //= 2
 
-    def get_item(self, idx):
+    def __getitem__(self, idx):
         assert 0 <= idx < self._size
         return self._value[self._size + idx]
 
