@@ -2,7 +2,7 @@ from __future__ import absolute_import
 from collections import deque, namedtuple
 import warnings
 import random
-from src.SumTree import SegmentTree, SumSegmentTree, MinSegmentTree
+from SumTree import SegmentTree, SumSegmentTree, MinSegmentTree
 import numpy as np
 
 

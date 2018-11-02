@@ -8,7 +8,7 @@ from keras.models import Sequential
 from keras.layers import Dense, Activation, Flatten, Convolution2D, Permute, LeakyReLU
 from keras.optimizers import Adam
 import keras.backend as K
-from src.memory import PrioritizedMemory, PartitionedMemory
+from memory import PrioritizedMemory, PartitionedMemory
 from rl.agents.dqn import DQNAgent
 from rl.policy import LinearAnnealedPolicy, BoltzmannQPolicy, EpsGreedyQPolicy
 from rl.memory import SequentialMemory
@@ -85,8 +85,8 @@ model = build_nn_model()
 print(model.summary())
 
 
-#memory = SequentialMemory(limit=1000000, window_length=WINDOW_LENGTH)
-memory = PrioritizedMemory(limit=1000000, alpha=.6, start_beta=.4, end_beta=1., steps_annealed=1700000, window_length=WINDOW_LENGTH)
+memory = SequentialMemory(limit=1000000, window_length=WINDOW_LENGTH)
+#memory = PrioritizedMemory(limit=1000000, alpha=.6, start_beta=.4, end_beta=1., steps_annealed=1700000, window_length=WINDOW_LENGTH)
 processor = AtariProcessor()
 
 policy = LinearAnnealedPolicy(EpsGreedyQPolicy(), attr='eps', value_max=1., value_min=.1, value_test=.05,
