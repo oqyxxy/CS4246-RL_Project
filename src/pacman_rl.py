@@ -93,9 +93,9 @@ policy = LinearAnnealedPolicy(EpsGreedyQPolicy(), attr='eps', value_max=1., valu
                               nb_steps=1000000)
 dqn = DQNAgent(model=model, nb_actions=nb_actions, policy=policy, memory=memory,
                processor=processor, nb_steps_warmup=50000, gamma=.99, target_model_update=10000,
-               train_interval=4, delta_clip=1., enable_double_dqn=True, enable_dueling_network=True)
-#dqn.compile(Adam(lr=.00025), metrics=['mae'])
-dqn.compile(Adam(lr=.0005), metrics=['mae'])
+               train_interval=4, delta_clip=1., enable_double_dqn=False, enable_dueling_network=False)
+dqn.compile(Adam(lr=.00025), metrics=['mae'])
+#dqn.compile(Adam(lr=.0005), metrics=['mae'])
 
 if execution_mode == 'train':
     weights_filename = 'dqn_{}_weights.h5f'.format(ENV_NAME)
