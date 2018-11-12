@@ -372,7 +372,8 @@ class PERMemory(Memory):
         # Return a tuple whre the first batch_size items are the transititions
         # while -2 is the importance weights of those transitions and -1 is
         # the idxs of the buffer (so that we can update priorities later)
-        return tuple(list(experiences)+ [importance_weights, idxs])
+        return experiences
+        # return tuple(list(experiences)+ [importance_weights, idxs])
 
     def update_priorities(self, idxs, priorities):
         #adjust priorities based on new TD error
@@ -471,7 +472,7 @@ print(model.summary())
 
 
 # memory = SequentialMemory(limit=1000000, window_length=WINDOW_LENGTH)
-memory = PERMemory(limit=1000000, alpha=.6, start_beta=.4, end_beta=1., steps_annealed=30000000, window_length=WINDOW_LENGTH)
+memory = PERMemory(limit=1000000, alpha=.6, start_beta=.4, end_beta=1., steps_annealed=10000000, window_length=WINDOW_LENGTH)
 processor = AtariProcessor()
 
 policy = LinearAnnealedPolicy(EpsGreedyQPolicy(), attr='eps', value_max=1., value_min=.1, value_test=.05,
@@ -479,7 +480,7 @@ policy = LinearAnnealedPolicy(EpsGreedyQPolicy(), attr='eps', value_max=1., valu
 dqn = DQNAgent(model=model, nb_actions=nb_actions, policy=policy, memory=memory,
                processor=processor, nb_steps_warmup=50000, gamma=.99, target_model_update=10000,
                train_interval=4, delta_clip=1., enable_double_dqn=True, enable_dueling_network=True)
-dqn.compile(Adam(lr=.00025), metrics=['mae'])
+dqn.compile(Adam(lr=.00025/4), metrics=['mae'])
 
 if execution_mode == 'train':
     weights_filename = 'dqn_{}_weights.h5f'.format(ENV_NAME)
