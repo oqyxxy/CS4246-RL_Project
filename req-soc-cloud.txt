@@ -28,7 +28,7 @@ Markdown==3.0.1
 mock==2.0.0
 numpy==1.15.2
 pbr==5.0.0
-Pillow==5.2.0
+Pillow==8.1.1
 protobuf==3.6.1
 psutil==5.4.7
 pygame==1.9.4
